@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/*
+  Theme system
+  ------------
+  All colours are CSS variables. Light values live in :root, dark values in [data-theme="dark"].
+  Tailwind classes like `bg-surface` or `text-muted` read these variables, so switching theme
+  is just flipping one attribute on <html>. To re-brand, change the values below.
+*/
+
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f5f8fd;
+  --surface-3: #eaf0fa;
+  --line: #e2e8f2;
+  --line-strong: #cdd6e4;
+  --text: #0e1730;
+  --muted: #4a5672;
+  --subtle: #8a94ab;
+  --primary: #2563eb;
+  --primary-hover: #1d4fd8;
+  --primary-soft: #eaf1ff;
+  --primary-text: #1d4ed8;
+  --grad-from: #2563eb;
+  --grad-to: #3b82f6;
+  --on-primary: #ffffff;
+  --success: #14804a;
+  --success-soft: #e8f7ef;
+  --warning: #9a5b00;
+  --warning-soft: #fff6e5;
+  --danger: #c62828;
+  --danger-soft: #fdecec;
+  --hero-from: #eef4ff;
+  --hero-to: #f7f9ff;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 4px 16px rgb(16 24 40 / 0.05);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #060a18;
+  --surface: #0c1226;
+  --surface-2: #111933;
+  --surface-3: #18223f;
+  --line: #1d2747;
+  --line-strong: #2b3760;
+  --text: #edf0fa;
+  --muted: #a6b0c9;
+  --subtle: #6d7898;
+  --primary: #7b5cff;
+  --primary-hover: #8d72ff;
+  --primary-soft: rgb(123 92 255 / 0.14);
+  --primary-text: #b8a6ff;
+  --grad-from: #6a4bff;
+  --grad-to: #f0875e;
+  --on-primary: #ffffff;
+  --success: #3ddc84;
+  --success-soft: rgb(61 220 132 / 0.12);
+  --warning: #ffc266;
+  --warning-soft: rgb(255 194 102 / 0.1);
+  --danger: #ff7a7a;
+  --danger-soft: rgb(255 122 122 / 0.1);
+  --hero-from: #0f1633;
+  --hero-to: #0a1024;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+  color-scheme: dark;
+}
+
+/* Map the variables to Tailwind colour names: bg-surface, text-muted, border-line, etc. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-text: var(--primary-text);
+  --color-grad-from: var(--grad-from);
+  --color-grad-to: var(--grad-to);
+  --color-on-primary: var(--on-primary);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-hero-from: var(--hero-from);
+  --color-hero-to: var(--hero-to);
+  --shadow-card: var(--shadow);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* `dark:` classes follow our theme attribute instead of the OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Gradient used for primary buttons, the active tab and highlighted words.
+   Declared with @utility so variants like `dark:bg-brand-gradient` and `hover:` work. */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(90deg, var(--grad-from), var(--grad-to));
+}
+@utility text-brand-gradient {
+  background-image: linear-gradient(90deg, var(--grad-from), var(--grad-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Make the generated QR scale nicely inside its box. */
+.qr-canvas svg,
+.qr-canvas canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Thin scrollbars for the sidebar and tab rows. */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+dialog::backdrop {
+  background: rgb(6 10 24 / 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+  }
+}
