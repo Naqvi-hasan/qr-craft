@@ -1,6 +1,6 @@
 # QR Craft: Creative QR Studio
 
-Ek free QR design workspace: 13 QR types (URL, Text, PDF link, Phone, SMS, WhatsApp, Email, Contact, WiFi, Location, UPI, App, Social), themes, templates, frames, logo, picture art, aur PNG / SVG / PDF / JPG export. Sab kuch browser mein chalta hai: koi backend nahi, user ka data kahin upload nahi hota.
+Ek free QR design workspace: 14 QR types (URL, Text, PDF link, Phone, SMS, WhatsApp, Email, Contact, WiFi, Location, Event, UPI, App, Social), themes, templates, frames, logo, picture art, PNG / SVG / PDF / JPG export, aur ek **Print Studio** (business card, WiFi card, UPI stand, review card, wristband, invitation, badge, sticker, poster). Sab kuch browser mein chalta hai: koi backend nahi, user ka data kahin upload nahi hota.
 
 **Tech:** Next.js 15 (App Router) + React 19 + Tailwind CSS v4
 **Libraries:** `qrcode-generator` (sirf QR ki math), `jsqr` (scan check), `jspdf` (PDF export). QR ki drawing hamara apna engine karta hai (`src/lib/qr/`).
@@ -14,7 +14,7 @@ Node.js 18.18+ chahiye.
 ```bash
 npm install      # packages install (pehli baar, aur package.json badalne ke baad)
 npm run dev      # http://localhost:3000
-npm test         # 41 unit tests
+npm test         # 54 tests
 npm run build    # production build
 ```
 
@@ -24,11 +24,11 @@ npm run build    # production build
 |---|---|
 | `/` | QR Studio |
 | `/templates` | 12 ready-made designs |
-| `/cards` | Printable WiFi card, business card, UPI payment stand |
-| `/scanner` | Camera ya photo se QR padhna |
+| `/cards` | Print Studio: 9 printable cheezein, 50 layouts (`/cards#wifi`, `/cards#invitation`...) |
+| `/scanner` | Camera ya photo se QR padhna, aur `/scanner#gate` = Gate check |
 | `/library` | Saved designs (sirf is browser mein) |
 | `/privacy` | Privacy page |
-| `/wifi-qr-code-generator` jaise 13 pages | Har QR type ka Google-friendly page |
+| `/wifi-qr-code-generator` jaise 14 pages | Har QR type ka Google-friendly page |
 | `/sitemap.xml`, `/robots.txt` | Search engines ke liye, apne aap bante hain |
 
 **Links jo Studio kholte hain:** `/#wifi` (type), `/?template=cafe-menu#url` (template), `/?design=<id>#url` (library se), `/?prefill=...#wifi` (scanner se).
@@ -62,7 +62,25 @@ npm run build    # production build
 
 **My Library (`/library`):** Studio mein "Save to library", phir yahan open, rename, duplicate, PNG download, delete. Backup (JSON file) aur Restore. Data browser ke IndexedDB mein, server pe kuch nahi.
 
-**Printable cards (`/cards`):** WiFi card (A6), business card (8.9 × 5.1 cm, vCard QR), UPI payment stand (A6). 7 colours, 3 dot styles, scan check. PNG, single PDF, ya A4 print sheet (business card 10, A6 cards 4 per page) 300 DPI pe.
+**Print Studio (`/cards`):** 9 cheezein, har ek ke kai layouts:
+
+| Cheez | Size | Layouts | Khaas baat |
+|---|---|---|---|
+| Business card | 8.9 × 5.1 cm | 12 front + 7 back | QR front pe ya back pe (user chunta hai), logo/photo, details on/off, team ke cards CSV se |
+| WiFi card | A6 | 4 | Hindi/English, table tent |
+| UPI stand | A6 | 4 | Fixed amount, Hindi/English, table tent |
+| Review card | A6 | 3 | Google review link |
+| QR wristband | 25.4 × 2.5 cm | 5 | Ticket number (bulk numbering), kids safety (parent ko call), link |
+| Invitation | 5 × 7 inch | 4 front + 2 back | QR = map / WhatsApp RSVP / calendar / link, programme back, guest naam bulk, WhatsApp e-invite image |
+| Event badge / ID | 5.4 × 8.6 cm | 3 | Photo, ID / contact / link QR, CSV bulk |
+| QR stickers | 25 to 63 mm | 3 | A4 sheet pe jitne aayein |
+| Poster | A4 | 3 | Link, WhatsApp, call ya text QR |
+
+Har cheez ke liye: colour (koi bhi, text aur QR apne aap readable rehte hain), heading font, QR dots, asli scan check, A4 print sheet (backs mirrored for double-side), true-size PDF, PNG, **print-shop PDF** (3 mm bleed + crop marks), "actual size" preview, draft apne aap browser mein save, aur My Library mein save.
+
+**Gate check (`/scanner#gate`):** ticket list (number range, paste ya CSV), camera lagatar scan karta hai: Valid / Already used / Not on the list, beep + vibrate, check-in CSV export. Ek phone pe chalta hai, data usi phone mein.
+
+**Event QR type:** calendar event (VEVENT). Scanner bhi event padh ke "Add to calendar (.ics)" deta hai.
 
 **SEO:** har QR type ka alag page (how-to, FAQ, FAQ structured data), canonical links, sitemap, robots, social preview image (`public/og.png`), site icon, footer mein saare generators ke links.
 
@@ -83,8 +101,9 @@ src/
 │   └── globals.css             Colour tokens (light + dark), Tailwind
 │
 ├── app/ (naye)
-│   ├── [slug]/page.js          13 per-type SEO pages (/wifi-qr-code-generator...)
-│   ├── cards/, scanner/, library/, privacy/   naye pages
+│   ├── [slug]/page.js          14 per-type SEO pages (/wifi-qr-code-generator...)
+│   ├── cards/                  /cards -> Print Studio
+│   ├── scanner/, library/, privacy/
 │   ├── sitemap.js, robots.js   /sitemap.xml, /robots.txt
 │   └── icon.svg                Browser tab icon
 │
@@ -92,7 +111,10 @@ src/
 │   ├── Icon.js                 Saare icons
 │   ├── scanner/                ScannerApp, CameraScanner, ImageScanner, ScanResult
 │   ├── library/                LibraryApp, LibraryCard
-│   ├── cards/                  CardsApp
+│   ├── print/                  Print Studio: PrintStudio (state), ProductPicker, LayoutPanel,
+│   │                           StylePanel, BulkPanel, PrintPreview, PrintExport
+│   ├── scanner/GateCheck.js    Gate check
+│   ├── library/PrintCard.js    Saved print design in the library
 │   ├── seo/SeoContent.js       How-to + FAQ + JSON-LD on type pages
 │   ├── layout/                 Har page ka frame
 │   │   ├── AppShell.js         Header + Sidebar + Footer
@@ -134,7 +156,17 @@ src/
 │   ├── qr/decoder.js           jsQR wrapper (scanner + scan check)
 │   ├── scan/parse.js           Scanned text -> WiFi/contact/UPI/link + warnings
 │   ├── library/db.js, model.js IndexedDB storage + record helpers, backup
-│   ├── cards/cards.js, export.js  Card layouts (mm), PNG/PDF/A4 sheet
+│   ├── print/                  Print engine (sab mm mein)
+│   │   ├── products/           Har printable cheez ki ALAG file (fields, layouts, QR, Hindi text)
+│   │   ├── engine.js           State -> SVG pages, layout filtering, A4 imposition, bulk
+│   │   ├── kit.js              Drawing helpers: text fit, bleed-aware boxes, icons, QR, photo
+│   │   ├── theme.js            Ek accent colour -> readable palette
+│   │   ├── qrBlock.js          Print ke liye QR (dark dots, light tile, sahi error correction)
+│   │   ├── export.js           PNG, PDF, print-shop PDF, A4 sheet, table tent, e-invite, share
+│   │   ├── bulk.js             CSV / list / number range -> rows
+│   │   ├── record.js           Library records + draft (sanitize)
+│   │   └── fonts.js, image.js
+│   ├── scan/gate.js            Gate check logic (ticket list, check-in)
 │   ├── studioLink.js           Links that open the Studio with data
 │   ├── site.js                 SITE_URL (canonical, sitemap)
 │   ├── color.js                Contrast, colour mixing, art colours
@@ -149,9 +181,9 @@ src/
     ├── qrStyle.js              DEFAULT_STYLE + saare options
     ├── themes.js               6 themes
     ├── templates.js            12 templates + categories
-    └── seo.js                  13 type pages ka text (title, description, steps, FAQ)
+    └── seo.js                  14 type pages ka text (title, description, steps, FAQ)
 
-tests/                          qr-types, render, templates tests
+tests/                          qr-types, render, templates, batch-d, print tests
 ```
 
 ### Data flow
@@ -169,6 +201,10 @@ Poora design ek `style` object hai (`config/qrStyle.js`). Theme aur template sir
 ## Kuch add karna ho to
 
 **Naya QR type:** `src/qr-types/` mein file banao (url.js copy karo) aur `qr-types/index.js` mein jodo.
+
+**Nayi printable cheez:** `src/lib/print/products/` mein file banao (review.js sabse chhota example hai) aur `products/index.js` mein jodo. Product = size, fields, validate, payload, layouts. UI sab apne aap bana leta hai.
+
+**Naya layout:** product file ke `layouts` mein ek object jodo: `{ id, name, tag, accent, hasQr, render(k) { return k.svg(...) } }`. `k` (kit.js) mm mein draw karta hai: `k.text`, `k.box`, `k.qr`, `k.qrTile`, `k.mark`, `k.avatar`. `npm test` har layout ko render aur escape check karta hai.
 
 **Naya theme:** `src/config/themes.js` mein ek object jodo:
 ```js
@@ -206,7 +242,8 @@ Phir bhi print karne se pehle 2-3 phones se scan zaroor karo.
 
 ## Aage kya
 
-- **Batch E:** Bulk QR (CSV se ZIP), PWA (install as app), Hindi UI, naye types (Event, Google Review, YouTube)
+- **Batch E:** Bulk QR (CSV se ZIP), PWA (install as app), poori site Hindi mein, naye types (YouTube)
+- **Multi-gate check-in:** kai phones ek hi ticket list share karein (backend chahiye)
 - **Account + cloud library**
 - **PDF upload:** Cloudflare R2 pe file, phir uska QR
 - **Dynamic QR + analytics:** redirect server, scan counting, privacy notice

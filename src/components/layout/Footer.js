@@ -11,7 +11,7 @@ const BADGES = [
 
 const TOOLS = [
   { href: "/templates", label: "Templates" },
-  { href: "/cards", label: "Printable cards" },
+  { href: "/cards", label: "Print studio" },
   { href: "/scanner", label: "QR scanner" },
   { href: "/library", label: "My library" },
   { href: "/privacy", label: "Privacy" },

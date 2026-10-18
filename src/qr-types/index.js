@@ -15,11 +15,12 @@ import email from "./email.js";
 import contact from "./contact.js";
 import wifi from "./wifi.js";
 import location from "./location.js";
+import event from "./event.js";
 import upi from "./upi.js";
 import app from "./app.js";
 import social from "./social.js";
 
-export const QR_TYPES = [url, text, pdf, phone, sms, whatsapp, email, contact, wifi, location, upi, app, social];
+export const QR_TYPES = [url, text, pdf, phone, sms, whatsapp, email, contact, wifi, location, event, upi, app, social];
 
 export const QR_TYPE_MAP = Object.fromEntries(QR_TYPES.map((t) => [t.id, t]));
 

@@ -63,11 +63,13 @@ export function sanitizeRecord(raw) {
   };
 }
 
-export function makeBackup(records) {
-  return JSON.stringify({ kind: BACKUP_KIND, version: 1, exportedAt: new Date().toISOString(), designs: records }, null, 2);
+// Version 2 adds `prints` (Print Studio designs). Version 1 files still restore.
+export function makeBackup(records, prints = []) {
+  return JSON.stringify({ kind: BACKUP_KIND, version: 2, exportedAt: new Date().toISOString(), designs: records, prints }, null, 2);
 }
 
-// Returns { records, skipped } or throws with a readable message.
+// Returns { records, skipped, prints } or throws with a readable message.
+// `prints` is the raw list; the caller cleans it with sanitizePrintRecord (lib/print/record.js).
 export function parseBackup(text) {
   let data;
   try {
@@ -83,7 +85,7 @@ export function parseBackup(text) {
     if (rec) records.push(rec);
     else skipped++;
   }
-  return { records, skipped };
+  return { records, skipped, prints: Array.isArray(data.prints) ? data.prints : [] };
 }
 
 export function searchRecords(records, query) {

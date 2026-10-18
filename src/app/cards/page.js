@@ -1,10 +1,11 @@
 import AppShell from "@/components/layout/AppShell";
 import Hero from "@/components/layout/Hero";
-import CardsApp from "@/components/cards/CardsApp";
+import PrintStudio from "@/components/print/PrintStudio";
 
 export const metadata = {
-  title: "Printable WiFi Card, QR Business Card and UPI Payment Stand | QR Craft",
-  description: "Make print-ready WiFi cards, QR business cards and UPI payment stands. Download PDF at 300 DPI or an A4 sheet with several copies. Free.",
+  title: "Print Studio: QR Business Cards, WiFi Cards, Wristbands, Invitations | QR Craft",
+  description:
+    "Design print-ready business cards, WiFi cards, UPI stands, review cards, QR wristbands, invitations, badges, stickers and posters. Bulk printing, double-sided PDF, 300 DPI. Free.",
   alternates: { canonical: "/cards" },
 };
 
@@ -15,12 +16,12 @@ export default function CardsPage() {
         icon="printer"
         title={
           <>
-            Printable <span className="text-brand-gradient">QR cards</span>
+            Print <span className="text-brand-gradient">Studio</span>
           </>
         }
-        description="WiFi cards for guests, visiting cards and UPI payment stands. Fill in the details, pick a colour, print."
+        description="Business cards, WiFi cards, UPI stands, wristbands, invitations, badges and more. Pick a layout, add your details, print."
       />
-      <CardsApp />
+      <PrintStudio />
     </AppShell>
   );
 }

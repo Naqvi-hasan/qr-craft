@@ -154,6 +154,21 @@ export const SEO_PAGES = [
     ],
   },
   {
+    typeId: "event",
+    slug: "event-qr-code-generator",
+    name: "Event",
+    metaTitle: "Event QR Code Generator: Add to Calendar in One Scan",
+    metaDescription: "Make a QR code that saves your event's date, time and venue to the phone's calendar. Great for invitations, posters and tickets. Free, no sign-up.",
+    intro: "Guests scan once and the event lands in their calendar with the right date, time and place, so nobody forgets.",
+    steps: ["Type the event name, date and time. Leave the time empty for an all-day event.", "Add the venue and any details, like dress code or lunch timing.", "Download, or put it on an invitation in the Print Studio."],
+    uses: ["Wedding and griha pravesh invitations", "Workshops and webinars", "School and society events", "Product launches"],
+    faqs: [
+      { q: "Does it work on iPhone and Android?", a: "Yes. Both phone cameras recognise calendar QR codes and offer to add the event. Some older Android phones need a scanner app such as Google Lens." },
+      { q: "Which time zone is used?", a: "The time is saved as local time, so 7 PM on your card shows as 7 PM in the guest's calendar." },
+      { q: "Can I change the date after printing?", a: "No. The details are stored inside the code itself. Print a new code if the date changes." },
+    ],
+  },
+  {
     typeId: "upi",
     slug: "upi-qr-code-generator",
     name: "UPI",

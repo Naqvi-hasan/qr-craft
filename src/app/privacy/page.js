@@ -21,12 +21,16 @@ const SECTIONS = [
     body: "The camera turns on only when you press Start camera. Frames are read on your device to find the QR code and are never recorded or uploaded. Photos you choose for scanning are read the same way.",
   },
   {
+    title: "Print Studio and Gate check",
+    body: "Cards, wristbands and invitations are drawn in your browser, including photos and logos you add, and bulk lists you paste. Your unfinished print design and Gate check ticket lists are kept in this browser's local storage so they survive a refresh. Nothing is uploaded.",
+  },
+  {
     title: "Visitor statistics",
     body: "We use Vercel Web Analytics to count page visits (for example, which pages are popular and the visitor's country). It doesn't use cookies and doesn't collect what you type into the generator.",
   },
   {
     title: "Settings saved in your browser",
-    body: "We remember your light or dark theme choice in your browser's local storage. That's the only preference we store.",
+    body: "We remember your light or dark theme choice in your browser's local storage, along with the Print Studio draft and Gate check list described above.",
   },
   {
     title: "Links inside QR codes",

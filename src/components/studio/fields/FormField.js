@@ -51,6 +51,10 @@ export default function FormField({ field, value, error, onChange, onBlur }) {
   const errorId = error ? `${id}-error` : undefined;
   const borderClass = error ? "border-danger" : "border-line";
 
+  if (field.type === "heading") {
+    return <h3 className="border-t border-line pt-4 text-xs font-semibold uppercase tracking-wider text-subtle">{field.label}</h3>;
+  }
+
   if (field.type === "select" && field.variant === "segmented") {
     return <Segmented field={field} value={value} onChange={onChange} />;
   }

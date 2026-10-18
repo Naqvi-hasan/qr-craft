@@ -5,7 +5,7 @@ import { scanCheck } from "@/lib/qr/validate";
 
 // Re-checks the design a moment after it stops changing.
 // status: "idle" (nothing to check) | "checking" | "pass" | "fail" | "error"
-export function useScanCheck({ svg, aspect, payload }, delay = 450) {
+export function useScanCheck({ svg, aspect, payload, width }, delay = 450) {
   const [status, setStatus] = useState("idle");
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export function useScanCheck({ svg, aspect, payload }, delay = 450) {
     let cancelled = false;
     setStatus("checking");
     const timer = setTimeout(() => {
-      scanCheck({ svg, aspect, payload })
+      scanCheck({ svg, aspect, payload, width })
         .then((result) => !cancelled && setStatus(result))
         .catch(() => !cancelled && setStatus("error"));
     }, delay);
@@ -24,7 +24,7 @@ export function useScanCheck({ svg, aspect, payload }, delay = 450) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [svg, aspect, payload, delay]);
+  }, [svg, aspect, payload, width, delay]);
 
   return status;
 }

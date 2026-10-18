@@ -30,14 +30,14 @@ function HelperCard({ helper, values }) {
 
 // Renders the input form for the selected QR type, using the type's `fields` list.
 // Errors are shown only for fields the user has touched, so the form doesn't start "red".
-export default function QrForm({ type, values, errors, touched, onChange, onBlur }) {
+export default function QrForm({ type, values, errors, touched, onChange, onBlur, title }) {
   const visibleFields = type.fields.filter((field) => isFieldVisible(field, values));
 
   return (
     <div className="flex flex-col gap-5">
       <h2 className="flex items-center gap-2 text-lg font-semibold text-text">
         <Icon name={type.icon} size={20} className="text-primary-text" />
-        Enter {type.label} details
+        {title ?? `Enter ${type.label} details`}
       </h2>
 
       {type.note && (

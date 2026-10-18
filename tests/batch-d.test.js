@@ -1,4 +1,4 @@
-// Tests for the scanner parser, library model, SEO config and printable cards.
+// Tests for the scanner parser, library model and SEO config.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -8,8 +8,6 @@ import { createRecord, duplicateRecord, makeBackup, parseBackup, sanitizeRecord,
 import { DEFAULT_STYLE } from "../src/config/qrStyle.js";
 import { SEO_PAGES } from "../src/config/seo.js";
 import { QR_TYPE_MAP, QR_TYPES } from "../src/qr-types/index.js";
-import { CARD_TYPES, sheetLayout, nestSvg } from "../src/lib/cards/cards.js";
-import { renderQrSvg } from "../src/lib/qr/render.js";
 
 // Round trip: what the Studio encodes, the scanner understands and can prefill back.
 function roundTrip(typeId, values) {
@@ -101,23 +99,4 @@ test("SEO pages: one per QR type, unique slugs, sensible lengths", () => {
     assert.equal(p.steps.length, 3);
     assert.ok(p.faqs.length >= 3);
   }
-});
-
-test("cards render, escape text and fit the print sheet", () => {
-  const n = 25;
-  const qr = renderQrSvg({ matrix: { size: n, isDark: (r, c) => (r + c) % 3 === 0 }, style: DEFAULT_STYLE, width: 512 }).svg;
-  const nested = nestSvg(qr, 10, 20, 30);
-  assert.match(nested, /^<svg[^>]* x="10" y="20" width="30" height="30"/);
-  for (const card of CARD_TYPES) {
-    const values = { ...card.initialValues, ssid: "Home<script>", password: "pw", firstName: "Asha & Co", upiId: "a@ybl", name: "Asha", shop: "Shop" };
-    const svg = card.render({ values, qrSvg: qr, accent: "#1d4ed8" });
-    assert.ok(svg.startsWith("<svg") && svg.endsWith("</svg>"), card.id);
-    assert.ok(!svg.includes("<script>"), `${card.id} escapes text`);
-    assert.match(svg, new RegExp(`viewBox="0 0 ${card.sizeMm[0]} ${card.sizeMm[1]}"`));
-    const { slots, scale } = sheetLayout(card);
-    assert.equal(slots.length, card.sheet.cols * card.sheet.rows);
-    for (const s of slots) assert.ok(s.x >= 0 && s.y >= 0 && s.x + s.w <= 210.01 && s.y + s.h <= 297.01, `${card.id} fits A4`);
-    assert.ok(scale > 0.85, `${card.id} is not shrunk too much (${scale})`);
-  }
-  assert.equal(sheetLayout(CARD_TYPES.find((c) => c.id === "business")).scale, 1, "business cards print at true size");
 });

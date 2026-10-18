@@ -14,8 +14,9 @@ function sameBytes(a, b) {
 }
 
 /** @returns {Promise<"pass"|"fail">} */
-export async function scanCheck({ svg, aspect, payload }) {
-  const width = CHECK_WIDTH;
+export async function scanCheck({ svg, aspect, payload, width: wanted }) {
+  // Printed items can be very wide (wristbands), so callers may ask for a bigger canvas.
+  const width = Math.round(Math.min(3200, Math.max(CHECK_WIDTH, wanted || 0)));
   const height = Math.round(width * aspect);
   // White behind everything, like a QR printed on paper.
   const canvas = await svgToCanvas(svg, width, height, { background: "#ffffff" });

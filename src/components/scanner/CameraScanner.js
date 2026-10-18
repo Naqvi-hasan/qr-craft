@@ -23,7 +23,8 @@ function cameraError(err) {
 
 // Live camera scanning. The camera starts only when the user presses Start,
 // and stops as soon as a code is found or the user leaves.
-export default function CameraScanner({ onResult }) {
+// continuous: keep scanning after a hit (Gate check). The same code is ignored for a few seconds.
+export default function CameraScanner({ onResult, continuous = false }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const [state, setState] = useState("idle"); // idle | starting | scanning | error
@@ -36,6 +37,8 @@ export default function CameraScanner({ onResult }) {
 
   useEffect(() => stop, []);
 
+  const lastHit = useRef({ text: null, at: 0 });
+
   useEffect(() => {
     if (state !== "scanning") return;
     let cancelled = false;
@@ -47,10 +50,20 @@ export default function CameraScanner({ onResult }) {
         try {
           const found = await decodeImageData(imageDataFrom(video, video.videoWidth, video.videoHeight, 720));
           if (found && !cancelled) {
-            stop();
-            setState("idle");
-            onResult(found.text);
-            return;
+            if (!continuous) {
+              stop();
+              setState("idle");
+              onResult(found.text);
+              return;
+            }
+            const now = Date.now();
+            const repeat = found.text === lastHit.current.text && now - lastHit.current.at < 3500;
+            lastHit.current = { text: found.text, at: now };
+            if (!repeat) {
+              onResult(found.text);
+              timer = setTimeout(tick, 1400); // pause so the guard can read the result
+              return;
+            }
           }
         } catch {
           // A bad frame: keep trying.
@@ -63,7 +76,7 @@ export default function CameraScanner({ onResult }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [state, onResult]);
+  }, [state, onResult, continuous]);
 
   async function start() {
     setError(null);

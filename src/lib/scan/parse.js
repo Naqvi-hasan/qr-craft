@@ -83,6 +83,30 @@ function safeUrl(text) {
   }
 }
 
+// iCalendar event (BEGIN:VEVENT ... END:VEVENT), optionally wrapped in VCALENDAR.
+function parseEvent(text) {
+  const unfolded = text.replace(/\r?\n[ \t]/g, "");
+  const out = {};
+  for (const line of unfolded.split(/\r?\n/)) {
+    const m = /^([A-Z-]+)((?:;[^:]*)?):(.*)$/i.exec(line.trim());
+    if (!m) continue;
+    const key = m[1].toUpperCase();
+    if (out[key] === undefined) out[key] = m[3].replace(/\\n/gi, "\n").replace(/\\([,;\\])/g, "$1");
+  }
+  const when = (v) => {
+    const d = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2}))?/.exec(v || "");
+    return d ? { date: `${d[1]}-${d[2]}-${d[3]}`, time: d[4] ? `${d[4]}:${d[5]}` : "" } : { date: "", time: "" };
+  };
+  return { title: out.SUMMARY ?? "", start: when(out.DTSTART), end: when(out.DTEND), location: out.LOCATION ?? "", description: out.DESCRIPTION ?? "" };
+}
+
+function readableWhen({ date, time }) {
+  if (!date) return "";
+  const d = new Date(`${date}T12:00:00`);
+  const day = Number.isNaN(d.getTime()) ? date : d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  return time ? `${day}, ${time}` : day;
+}
+
 /**
  * @param {string} raw  decoded QR text
  * @returns {{ kind, label, icon, fields: {label,value,secret?}[], action: {href,label,download?}|null,
@@ -198,6 +222,26 @@ export function parseQrText(raw) {
       ],
       warnings: encryption === "nopass" ? ["Open network: anyone nearby can see what you send over it."] : [],
       prefill: { typeId: "wifi", values: { ssid: w.S ?? "", encryption, password: w.P ?? "", hidden: w.H?.toLowerCase() === "true" } },
+    };
+  }
+
+  if (/^BEGIN:(VEVENT|VCALENDAR)/i.test(trimmed) && /BEGIN:VEVENT/i.test(trimmed)) {
+    const e = parseEvent(trimmed);
+    const ics = /^BEGIN:VCALENDAR/i.test(trimmed) ? trimmed : `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//QR Craft//EN\n${trimmed}\nEND:VCALENDAR`;
+    return {
+      ...base,
+      kind: "event",
+      label: "Calendar event",
+      icon: "calendar",
+      fields: [
+        { label: "Event", value: e.title || "Untitled event" },
+        ...(e.start.date ? [{ label: "Starts", value: readableWhen(e.start) }] : []),
+        ...(e.end.date && (e.end.date !== e.start.date || e.end.time) ? [{ label: "Ends", value: readableWhen(e.end) }] : []),
+        ...(e.location ? [{ label: "Place", value: e.location }] : []),
+        ...(e.description ? [{ label: "Details", value: e.description }] : []),
+      ],
+      action: { href: `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`, label: "Add to calendar (.ics)", download: `${(e.title || "event").replace(/[^a-z0-9]+/gi, "-").slice(0, 40)}.ics` },
+      prefill: { typeId: "event", values: { title: e.title, startDate: e.start.date, startTime: e.start.time, endDate: e.end.date !== e.start.date ? e.end.date : "", endTime: e.end.time, location: e.location, description: e.description } },
     };
   }
 

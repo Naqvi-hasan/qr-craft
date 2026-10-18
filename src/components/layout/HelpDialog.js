@@ -7,6 +7,7 @@ const STEPS = [
   { icon: "app", title: "Pick a type", text: "Choose what the QR should do: open a link, call, join WiFi, pay by UPI and more." },
   { icon: "edit", title: "Fill in the details", text: "The QR updates live as you type. Fix anything marked in red." },
   { icon: "download", title: "Download and test", text: "Download PNG for screens, SVG for print. Always test-scan with 2 phones before printing." },
+  { icon: "printer", title: "Print Studio", text: "Business cards, WiFi cards, wristbands, invitations, badges and stickers with your QR. Bulk printing and A4 sheets included." },
 ];
 
 // "Help" button in the header that opens a short how-to.
