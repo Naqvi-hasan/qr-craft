@@ -10,7 +10,6 @@ import { NAV_ITEMS } from "./nav";
 
 export default function Header() {
   const pathname = usePathname();
-  const links = NAV_ITEMS.filter((item) => !item.soon);
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface/85 backdrop-blur-md">
@@ -30,20 +29,20 @@ export default function Header() {
       </div>
 
       {/* Phone/tablet navigation (the sidebar takes over on laptops). */}
-      <nav aria-label="Main" className="flex gap-1 border-t border-line px-4 py-2 lg:hidden">
-        {links.map((item) => {
+      <nav aria-label="Main" className="scroll-thin flex gap-1 overflow-x-auto border-t border-line px-3 py-2 lg:hidden">
+        {NAV_ITEMS.map((item) => {
           const active = item.href === pathname;
           return (
             <Link
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+              className={`flex shrink-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-xs font-semibold transition ${
                 active ? "bg-primary-soft text-primary-text" : "text-muted hover:bg-surface-2 hover:text-text"
               }`}
             >
-              <Icon name={item.icon} size={16} />
-              {item.label}
+              <Icon name={item.icon} size={15} />
+              {item.short}
             </Link>
           );
         })}

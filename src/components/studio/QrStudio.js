@@ -6,12 +6,12 @@ import QrForm from "./QrForm";
 import QrPreview from "./QrPreview";
 import ExportPanel from "./ExportPanel";
 import MobileQrBar from "./MobileQrBar";
+import SaveToLibrary from "./SaveToLibrary";
 import DesignPanel from "./design/DesignPanel";
 import Icon from "../Icon";
 import { QR_TYPES, getQrType, buildQr } from "@/qr-types";
 import { CTA_BY_TYPE, DEFAULT_STYLE } from "@/config/qrStyle";
-import { TEMPLATE_MAP } from "@/config/templates";
-import { applyPreset, applyTheme, getEffectiveEcLevel, getStyleWarnings, setIn } from "@/lib/qr/style";
+import { applyPreset, applyTheme, deepMerge, getEffectiveEcLevel, getStyleWarnings, setIn } from "@/lib/qr/style";
 import { isDense } from "@/lib/capacity";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useQrDesign } from "@/hooks/useQrDesign";
@@ -27,26 +27,36 @@ const cardClass = "rounded-3xl border border-line bg-surface shadow-card";
 //   very wide (2xl): content | preview | design, all visible
 //   laptop (lg):     [Content | Design tabs] | preview
 //   phone:           tabs, then preview below (plus a floating "view QR" button)
-export default function QrStudio({ typeId, onTypeChange, templateId, onTemplateApplied }) {
+export default function QrStudio({ typeId, onTypeChange, incoming, onIncomingApplied }) {
   const [valuesByType, setValuesByType] = useState(initialValuesForAllTypes);
   const [touchedByType, setTouchedByType] = useState({});
   const [style, setStyle] = useState(DEFAULT_STYLE);
   const [pane, setPane] = useState("content");
   const [showPayload, setShowPayload] = useState(false);
+  const [saved, setSaved] = useState(null); // { id, name } when this design is in My Library
 
   const type = getQrType(typeId);
   const values = valuesByType[type.id];
   const touched = touchedByType[type.id] ?? {};
   const ecLevel = getEffectiveEcLevel(style);
 
-  // Opened from the Templates page: apply that design once.
+  // Something to load: a template, a saved design or scanned values (see StudioApp).
   useEffect(() => {
-    const template = templateId && TEMPLATE_MAP[templateId];
-    if (!template) return;
-    setStyle((prev) => applyPreset(prev, template.style));
-    setPane("design");
-    onTemplateApplied?.();
-  }, [templateId, onTemplateApplied]);
+    if (!incoming) return;
+    const { typeId: inType, values: inValues, style: inStyle, templateStyle, saved: inSaved, pane: inPane } = incoming;
+    const inTypeDef = inType && QR_TYPES.find((t) => t.id === inType);
+    if (inTypeDef && inValues) {
+      const merged = { ...inTypeDef.initialValues };
+      for (const key of Object.keys(merged)) if (key in inValues) merged[key] = inValues[key];
+      setValuesByType((prev) => ({ ...prev, [inType]: merged }));
+      setTouchedByType((prev) => ({ ...prev, [inType]: Object.fromEntries(Object.keys(merged).map((k) => [k, true])) }));
+    }
+    if (inStyle) setStyle(deepMerge(DEFAULT_STYLE, inStyle));
+    if (templateStyle) setStyle((prev) => applyPreset(prev, templateStyle));
+    setSaved(inSaved ?? null);
+    if (inPane) setPane(inPane);
+    onIncomingApplied?.();
+  }, [incoming, onIncomingApplied]);
 
   const { errors, payload } = useMemo(() => buildQr(type.id, values, ecLevel), [type.id, values, ecLevel]);
   const debouncedPayload = useDebounce(payload, 250);
@@ -169,6 +179,13 @@ export default function QrStudio({ typeId, onTypeChange, templateId, onTemplateA
         )}
 
         <ExportPanel svg={design.svg} aspect={design.aspect} fileName={`qr-${type.id}`} transparent={style.background.transparent} />
+
+        <SaveToLibrary
+          canSave={Boolean(payload)}
+          saved={saved}
+          onSaved={setSaved}
+          buildRecord={() => ({ typeId: type.id, typeLabel: type.label, values, style, payload })}
+        />
 
         {payload && (
           <div className="text-xs text-subtle">

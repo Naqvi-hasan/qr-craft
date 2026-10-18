@@ -5,6 +5,7 @@ import TemplateGallery from "@/components/templates/TemplateGallery";
 export const metadata = {
   title: "QR Code Templates: Café, Wedding, Business, UPI and more | QR Craft",
   description: "Ready-made QR code designs for menus, weddings, events, payments, social profiles and shops. Pick one, add your details, download.",
+  alternates: { canonical: "/templates" },
 };
 
 export default function TemplatesPage() {

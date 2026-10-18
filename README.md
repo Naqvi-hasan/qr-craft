@@ -14,12 +14,24 @@ Node.js 18.18+ chahiye.
 ```bash
 npm install      # packages install (pehli baar, aur package.json badalne ke baad)
 npm run dev      # http://localhost:3000
-npm test         # 34 unit tests
+npm test         # 41 unit tests
 npm run build    # production build
 ```
 
-Pages: `/` = QR Studio, `/templates` = Template gallery.
-Shareable links: `/#wifi` WiFi tab kholta hai, `/?template=cafe-menu#url` template laga ke kholta hai.
+**Pages**
+
+| Address | Kya hai |
+|---|---|
+| `/` | QR Studio |
+| `/templates` | 12 ready-made designs |
+| `/cards` | Printable WiFi card, business card, UPI payment stand |
+| `/scanner` | Camera ya photo se QR padhna |
+| `/library` | Saved designs (sirf is browser mein) |
+| `/privacy` | Privacy page |
+| `/wifi-qr-code-generator` jaise 13 pages | Har QR type ka Google-friendly page |
+| `/sitemap.xml`, `/robots.txt` | Search engines ke liye, apne aap bante hain |
+
+**Links jo Studio kholte hain:** `/#wifi` (type), `/?template=cafe-menu#url` (template), `/?design=<id>#url` (library se), `/?prefill=...#wifi` (scanner se).
 
 **Free hosting (Vercel):** GitHub pe push karo, vercel.com pe "Import Project", Deploy.
 
@@ -46,6 +58,16 @@ Shareable links: `/#wifi` WiFi tab kholta hai, `/?template=cafe-menu#url` templa
 
 **Layout:** badi screen pe 3 column (Content | Preview | Design), laptop pe Content/Design tabs + preview, phone pe tabs + floating "QR ready" button. Light/dark theme.
 
+**Scanner (`/scanner`):** camera (sirf "Start camera" dabane pe chalu) ya photo/screenshot upload/paste. Link apne aap nahi khulta: pehle asli address, WiFi password, contact ya UPI payee dikhta hai. Short links, http, IP address, look-alike domain aur `javascript:` links pe warning. "Make a QR like this" se scanned data Studio mein bhar jata hai.
+
+**My Library (`/library`):** Studio mein "Save to library", phir yahan open, rename, duplicate, PNG download, delete. Backup (JSON file) aur Restore. Data browser ke IndexedDB mein, server pe kuch nahi.
+
+**Printable cards (`/cards`):** WiFi card (A6), business card (8.9 × 5.1 cm, vCard QR), UPI payment stand (A6). 7 colours, 3 dot styles, scan check. PNG, single PDF, ya A4 print sheet (business card 10, A6 cards 4 per page) 300 DPI pe.
+
+**SEO:** har QR type ka alag page (how-to, FAQ, FAQ structured data), canonical links, sitemap, robots, social preview image (`public/og.png`), site icon, footer mein saare generators ke links.
+
+**Analytics:** Vercel Web Analytics (cookie-free page views).
+
 **Templates page:** 12 templates (Business, Food & café, Events, Payments, Social & gaming, Places), category filter, asli scannable preview.
 
 ---
@@ -60,8 +82,18 @@ src/
 │   ├── templates/page.js       /templates
 │   └── globals.css             Colour tokens (light + dark), Tailwind
 │
+├── app/ (naye)
+│   ├── [slug]/page.js          13 per-type SEO pages (/wifi-qr-code-generator...)
+│   ├── cards/, scanner/, library/, privacy/   naye pages
+│   ├── sitemap.js, robots.js   /sitemap.xml, /robots.txt
+│   └── icon.svg                Browser tab icon
+│
 ├── components/
 │   ├── Icon.js                 Saare icons
+│   ├── scanner/                ScannerApp, CameraScanner, ImageScanner, ScanResult
+│   ├── library/                LibraryApp, LibraryCard
+│   ├── cards/                  CardsApp
+│   ├── seo/SeoContent.js       How-to + FAQ + JSON-LD on type pages
 │   ├── layout/                 Har page ka frame
 │   │   ├── AppShell.js         Header + Sidebar + Footer
 │   │   ├── Header.js           Logo, Help, theme toggle, phone navigation
@@ -99,6 +131,12 @@ src/
 │   │   ├── raster.js           SVG -> canvas
 │   │   ├── export.js           PNG / JPG / SVG / PDF download, copy
 │   │   └── validate.js         Scan check (jsQR)
+│   ├── qr/decoder.js           jsQR wrapper (scanner + scan check)
+│   ├── scan/parse.js           Scanned text -> WiFi/contact/UPI/link + warnings
+│   ├── library/db.js, model.js IndexedDB storage + record helpers, backup
+│   ├── cards/cards.js, export.js  Card layouts (mm), PNG/PDF/A4 sheet
+│   ├── studioLink.js           Links that open the Studio with data
+│   ├── site.js                 SITE_URL (canonical, sitemap)
 │   ├── color.js                Contrast, colour mixing, art colours
 │   ├── validators.js, escape.js, capacity.js
 │
@@ -110,7 +148,8 @@ src/
 └── config/
     ├── qrStyle.js              DEFAULT_STYLE + saare options
     ├── themes.js               6 themes
-    └── templates.js            12 templates + categories
+    ├── templates.js            12 templates + categories
+    └── seo.js                  13 type pages ka text (title, description, steps, FAQ)
 
 tests/                          qr-types, render, templates tests
 ```
@@ -157,9 +196,17 @@ Phir bhi print karne se pehle 2-3 phones se scan zaroor karo.
 
 ---
 
+## Deploy ke baad ek baar ka setup
+
+1. **Analytics on karo:** Vercel → project → **Analytics** tab → **Enable**. Agle deploy ke baad visits dikhne lagenge.
+2. **Apna domain (jab lo):** Vercel → Settings → Domains mein jodo, aur Settings → Environment Variables mein `NEXT_PUBLIC_SITE_URL` = `https://aapka-domain.com` daal ke redeploy karo. Domain nahi hai to kuch mat karo, Vercel ka address apne aap use hota hai.
+3. **Google Search Console:** search.google.com/search-console → **URL prefix** → apna site address → verification mein **HTML tag** chuno. Tag ke `content="..."` wala code copy karke Vercel mein `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` naam se environment variable banao, redeploy karo, phir Verify dabao. Uske baad **Sitemaps** mein `sitemap.xml` submit karo.
+
+---
+
 ## Aage kya
 
-- **Scanner:** camera/image se QR padhna (HTTPS chahiye)
-- **My library:** designs save karna (pehle browser mein, phir account)
+- **Batch E:** Bulk QR (CSV se ZIP), PWA (install as app), Hindi UI, naye types (Event, Google Review, YouTube)
+- **Account + cloud library**
 - **PDF upload:** Cloudflare R2 pe file, phir uska QR
 - **Dynamic QR + analytics:** redirect server, scan counting, privacy notice

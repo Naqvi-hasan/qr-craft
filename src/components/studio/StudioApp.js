@@ -5,12 +5,16 @@ import Hero from "../layout/Hero";
 import QrStudio from "./QrStudio";
 import { QR_TYPE_MAP, DEFAULT_TYPE_ID, getQrType } from "@/qr-types";
 import { TEMPLATE_MAP } from "@/config/templates";
+import { decodePrefill } from "@/lib/studioLink";
+import { getDesign } from "@/lib/library/db";
 
-// Studio page logic: which QR type is selected (kept in the URL hash, e.g. /#wifi)
-// and whether we arrived from the Templates page (/?template=cafe-menu#url).
-export default function StudioApp() {
-  const [typeId, setTypeId] = useState(DEFAULT_TYPE_ID);
-  const [templateId, setTemplateId] = useState(null);
+// Studio page logic: which QR type is selected (kept in the URL hash, e.g. /#wifi),
+// and whether we arrived with something to load (see lib/studioLink.js).
+// `initialTypeId` is used by the per-type pages, e.g. /wifi-qr-code-generator.
+export default function StudioApp({ initialTypeId = DEFAULT_TYPE_ID, showHero = true }) {
+  const [typeId, setTypeId] = useState(initialTypeId);
+  const [incoming, setIncoming] = useState(null);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     const readHash = () => {
@@ -18,9 +22,29 @@ export default function StudioApp() {
       if (QR_TYPE_MAP[id]) setTypeId(id);
     };
     readHash();
-    const template = new URLSearchParams(window.location.search).get("template");
-    if (template && TEMPLATE_MAP[template]) setTemplateId(template);
     window.addEventListener("hashchange", readHash);
+
+    const params = new URLSearchParams(window.location.search);
+    const template = params.get("template");
+    const designId = params.get("design");
+    const prefill = params.get("prefill");
+    const hashType = window.location.hash.replace("#", "");
+
+    if (template && TEMPLATE_MAP[template]) {
+      setIncoming({ templateStyle: TEMPLATE_MAP[template].style, pane: "design" });
+    } else if (designId) {
+      getDesign(designId)
+        .then((record) => {
+          if (!record) throw new Error("That saved design wasn't found in this browser.");
+          setTypeId(record.typeId);
+          setIncoming({ typeId: record.typeId, values: record.values, style: record.style, saved: { id: record.id, name: record.name } });
+        })
+        .catch((err) => setLoadError(err.message));
+    } else if (prefill && QR_TYPE_MAP[hashType]) {
+      const values = decodePrefill(prefill);
+      if (values) setIncoming({ typeId: hashType, values });
+    }
+
     return () => window.removeEventListener("hashchange", readHash);
   }, []);
 
@@ -29,9 +53,9 @@ export default function StudioApp() {
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${id}`);
   }, []);
 
-  // Once the template is applied, drop it from the URL so a refresh doesn't re-apply it.
-  const clearTemplate = useCallback(() => {
-    setTemplateId(null);
+  // Once loaded, drop the parameters so a refresh doesn't load them again.
+  const clearIncoming = useCallback(() => {
+    setIncoming(null);
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.hash}`);
   }, []);
 
@@ -39,8 +63,15 @@ export default function StudioApp() {
 
   return (
     <>
-      <Hero icon={type.icon} title={<>Make a QR code for <span className="text-brand-gradient">{type.label}</span></>} description={type.description} />
-      <QrStudio typeId={typeId} onTypeChange={selectType} templateId={templateId} onTemplateApplied={clearTemplate} />
+      {showHero && (
+        <Hero icon={type.icon} title={<>Make a QR code for <span className="text-brand-gradient">{type.label}</span></>} description={type.description} />
+      )}
+      {loadError && (
+        <p role="alert" className="rounded-2xl border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-warning">
+          {loadError}
+        </p>
+      )}
+      <QrStudio typeId={typeId} onTypeChange={selectType} incoming={incoming} onIncomingApplied={clearIncoming} />
     </>
   );
 }

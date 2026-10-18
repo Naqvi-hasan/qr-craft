@@ -121,8 +121,9 @@ body {
 }
 
 /* Make the generated QR scale nicely inside its box. */
-.qr-canvas svg,
-.qr-canvas canvas {
+/* Only the outer SVG: cards nest a QR <svg> inside, which must keep its own size. */
+.qr-canvas > svg,
+.qr-canvas > canvas {
   display: block;
   max-width: 100%;
   height: auto;

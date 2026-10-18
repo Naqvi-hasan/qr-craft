@@ -15,19 +15,8 @@ export default function Sidebar() {
         <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-subtle">Workspace</p>
         <ul className="flex flex-col gap-0.5">
           {NAV_ITEMS.map((item) => {
-            const active = item.href === pathname;
+            const active = item.href === pathname || (item.href === "/" && /-qr-code-generator$/.test(pathname));
             const base = "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition";
-            if (item.soon) {
-              return (
-                <li key={item.label}>
-                  <span className={`${base} cursor-default text-subtle`} aria-disabled="true">
-                    <Icon name={item.icon} size={18} />
-                    {item.label}
-                    <span className="ml-auto rounded-full border border-line px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">Soon</span>
-                  </span>
-                </li>
-              );
-            }
             return (
               <li key={item.label}>
                 <Link
